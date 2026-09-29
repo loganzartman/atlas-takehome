@@ -1,46 +1,43 @@
-import { fetchServerSentEvents, useChat } from '@tanstack/ai-react'
-import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { useTRPC } from '#/integrations/trpc/react'
 
 export const Route = createFileRoute('/')({
+  loader: ({ context }) =>
+    context.queryClient.query(context.trpc.trips.list.queryOptions()),
   component: App,
 })
 
 function App() {
-  const [input, setInput] = useState('')
-  const { messages, sendMessage, isLoading, error } = useChat({
-    connection: fetchServerSentEvents('/api/chat'),
+  const trpc = useTRPC()
+  const navigate = useNavigate()
+  const { data: trips = [] } = useQuery(trpc.trips.list.queryOptions())
+  const create = useMutation({
+    ...trpc.trips.create.mutationOptions(),
+    onSuccess: (trip) =>
+      navigate({ to: '/trips/$tripId', params: { tripId: trip.id } }),
   })
 
   return (
     <main className="mx-auto max-w-2xl p-8">
-      <form
-        className="mb-4 flex gap-2"
-        onSubmit={(e) => {
-          e.preventDefault()
-          if (!input.trim()) return
-          sendMessage(input.trim())
-          setInput('')
-        }}
+      <button
+        type="button"
+        className="mb-4 rounded border px-3 py-1"
+        disabled={create.isPending}
+        onClick={() => create.mutate()}
       >
-        <input
-          className="flex-1 rounded border px-2 py-1"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          disabled={isLoading}
-        />
-        <button
-          type="submit"
-          className="rounded border px-3 py-1"
-          disabled={isLoading}
-        >
-          Send
-        </button>
-      </form>
-      {error && <p className="text-red-600">{error.message}</p>}
-      <pre className="whitespace-pre-wrap text-xs">
-        {JSON.stringify(messages, null, 2)}
-      </pre>
+        New trip
+      </button>
+      <ul className="list-disc pl-5">
+        {trips.map((trip) => (
+          <li key={trip.id}>
+            <Link to="/trips/$tripId" params={{ tripId: trip.id }}>
+              {trip.id}
+            </Link>{' '}
+            ({trip.createdAt.toLocaleString()})
+          </li>
+        ))}
+      </ul>
     </main>
   )
 }

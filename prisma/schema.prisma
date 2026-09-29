@@ -7,8 +7,75 @@ datasource db {
   provider = "sqlite"
 }
 
-model Todo {
-  id        Int      @id @default(autoincrement())
-  title     String
-  createdAt DateTime @default(now())
+/// One conversation plans one trip. Trip.id is also the chat threadId.
+model Trip {
+  id         String            @id @default(cuid())
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  profile    TripProfile?
+  priorities ProfilePriority[]
+}
+
+/// Source of truth for what's been locked in. Keep in sync with
+/// src/lib/trip-profile.ts (a compile-time check enforces matching fields).
+model TripProfile {
+  tripId        String    @id
+  trip          Trip      @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  destination   String? // "City, State, Country"
+  origin        String? // "City, State, Country"; travelers share its nationality
+  startDate     DateTime?
+  endDate       DateTime?
+  travelers     Int?
+  budget        String? // freeform, e.g. "around $2k"
+  visaNotes     String?
+  activityPrefs String?
+  foodPrefs     String?
+  constraints   String? // accessibility, diet, mobility, ...
+  notes         String? // agent's own notes, e.g. preferences not yet locked in
+  updatedAt     DateTime  @updatedAt
+}
+
+/// Sort order for the planning items in src/lib/trip-profile.ts. Completion is
+/// derived from TripProfile, never stored here.
+model ProfilePriority {
+  tripId  String
+  trip    Trip    @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  item    String
+  rank    Int // lower = ask sooner
+  skipped Boolean @default(false)
+
+  @@id([tripId, item])
+}
+
+// Chat persistence stores for @tanstack/ai-persistence, per its Prisma recipe.
+// ChatThread.threadId is a Trip.id, but has no foreign key: the store creates
+// the row itself on first save.
+
+model ChatThread {
+  threadId     String @id
+  messagesJson String
+  updatedAt    BigInt // epoch ms
+}
+
+model ChatRun {
+  runId           String   @id
+  threadId        String
+  status          String
+  startedAt       BigInt // epoch ms
+  finishedAt      BigInt?
+  error           String?
+  errorCode       String?
+  usageJson       String?
+  sandboxKey      String?
+  detachedSince   BigInt?
+  cancelRequested Boolean?
+  driverEpoch     Int?
+  parentRunId     String?
+  subagentRunId   String?
+  name            String?
+
+  @@index([threadId, status])
+  @@index([threadId, startedAt])
+  @@index([parentRunId, startedAt])
+  @@index([status, detachedSince])
 }
