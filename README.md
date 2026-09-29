@@ -5,11 +5,26 @@ Prisma (SQLite).
 
 ## Getting started
 
+Create `.env.local` file:
+
+```
+DATABASE_URL="file:./dev.db"
+OPENROUTER_API_KEY="<your-secret-key>"
+OPENROUTER_MODEL="qwen/qwen3.8-27b"
+```
+
+Run setup:
+
 ```bash
+# install nvm
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.8/install.sh | bash
+
+nvm install
+corepack enable
 pnpm install
-# .env.local needs DATABASE_URL, OPENROUTER_API_KEY, OPENROUTER_MODEL
-pnpm db:generate   # generate Prisma client into src/generated/prisma
-pnpm db:migrate    # apply migrations to the DB in DATABASE_URL
+
+pnpm db:generate
+pnpm db:migrate
 pnpm dev
 ```
 
@@ -37,9 +52,3 @@ pnpm dev
   here.
 - **ChatThread / ChatRun**: owned by `@tanstack/ai-persistence` (transcript
   JSON per thread; per-turn status, usage and cost).
-
-## Scripts
-
-- `pnpm dev` / `pnpm build` / `pnpm preview`
-- `pnpm lint` / `pnpm format` / `pnpm check` (Biome)
-- `pnpm db:generate` / `db:migrate` / `db:push` / `db:studio`
