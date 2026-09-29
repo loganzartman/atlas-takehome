@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PreviewRouteImport } from './routes/preview'
 import { Route as ApiChatRouteImport } from './routes/api.chat'
 import { Route as TripsTripIdRouteImport } from './routes/trips.$tripId'
 import { Route as ApiTrpcSplatRouteImport } from './routes/api.trpc.$'
@@ -17,6 +18,11 @@ import { Route as ApiTrpcSplatRouteImport } from './routes/api.trpc.$'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PreviewRoute = PreviewRouteImport.update({
+  id: '/preview',
+  path: '/preview',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiChatRoute = ApiChatRouteImport.update({
@@ -37,12 +43,14 @@ const ApiTrpcSplatRoute = ApiTrpcSplatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/preview': typeof PreviewRoute
   '/api/chat': typeof ApiChatRoute
   '/trips/$tripId': typeof TripsTripIdRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/preview': typeof PreviewRoute
   '/api/chat': typeof ApiChatRoute
   '/trips/$tripId': typeof TripsTripIdRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
@@ -50,20 +58,28 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/preview': typeof PreviewRoute
   '/api/chat': typeof ApiChatRoute
   '/trips/$tripId': typeof TripsTripIdRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/chat' | '/trips/$tripId' | '/api/trpc/$'
+  fullPaths: '/' | '/preview' | '/api/chat' | '/trips/$tripId' | '/api/trpc/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/chat' | '/trips/$tripId' | '/api/trpc/$'
-  id: '__root__' | '/' | '/api/chat' | '/trips/$tripId' | '/api/trpc/$'
+  to: '/' | '/preview' | '/api/chat' | '/trips/$tripId' | '/api/trpc/$'
+  id:
+    | '__root__'
+    | '/'
+    | '/preview'
+    | '/api/chat'
+    | '/trips/$tripId'
+    | '/api/trpc/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  PreviewRoute: typeof PreviewRoute
   ApiChatRoute: typeof ApiChatRoute
   TripsTripIdRoute: typeof TripsTripIdRoute
   ApiTrpcSplatRoute: typeof ApiTrpcSplatRoute
@@ -76,6 +92,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/preview': {
+      id: '/preview'
+      path: '/preview'
+      fullPath: '/preview'
+      preLoaderRoute: typeof PreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/chat': {
@@ -104,6 +127,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  PreviewRoute: PreviewRoute,
   ApiChatRoute: ApiChatRoute,
   TripsTripIdRoute: TripsTripIdRoute,
   ApiTrpcSplatRoute: ApiTrpcSplatRoute,

@@ -1,7 +1,10 @@
 import { fetchServerSentEvents, useChat } from '@tanstack/ai-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, notFound } from '@tanstack/react-router'
-import { useState } from 'react'
+import { ChatInput } from '#/components/ChatInput'
+import { ChatMessage } from '#/components/ChatMessage'
+import { MessageParts } from '#/components/MessageParts'
+import { TripLayout } from '#/components/TripLayout'
 import { useTRPC } from '#/integrations/trpc/react'
 
 export const Route = createFileRoute('/trips/$tripId')({
@@ -25,7 +28,6 @@ function Trip({ tripId }: { tripId: string }) {
   const queryClient = useQueryClient()
   const { data: trip } = useQuery(trpc.trips.get.queryOptions({ id: tripId }))
 
-  const [input, setInput] = useState('')
   const { messages, sendMessage, isLoading, error } = useChat({
     threadId: tripId,
     connection: fetchServerSentEvents('/api/chat'),
@@ -37,34 +39,28 @@ function Trip({ tripId }: { tripId: string }) {
   })
 
   return (
-    <main className="mx-auto max-w-2xl p-8">
-      <form
-        className="mb-4 flex gap-2"
-        onSubmit={(e) => {
-          e.preventDefault()
-          if (!input.trim()) return
-          sendMessage(input.trim())
-          setInput('')
-        }}
-      >
-        <input
-          className="flex-1 rounded border px-2 py-1"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          disabled={isLoading}
-        />
-        <button
-          type="submit"
-          className="rounded border px-3 py-1"
-          disabled={isLoading}
-        >
-          Send
-        </button>
-      </form>
-      {error && <p className="text-red-600">{error.message}</p>}
-      <pre className="whitespace-pre-wrap text-xs">
-        {JSON.stringify({ trip, messages }, null, 2)}
-      </pre>
-    </main>
+    <TripLayout
+      messages={
+        <>
+          {messages.map((message, i) =>
+            message.role === 'system' ? null : (
+              <ChatMessage key={message.id} sender={message.role}>
+                <MessageParts
+                  message={message}
+                  streaming={isLoading && i === messages.length - 1}
+                />
+              </ChatMessage>
+            ),
+          )}
+          {error && <p className="text-sm text-red-600">{error.message}</p>}
+        </>
+      }
+      input={<ChatInput onSubmit={sendMessage} disabled={isLoading} />}
+      plan={
+        <pre className="whitespace-pre-wrap text-xs">
+          {JSON.stringify(trip, null, 2)}
+        </pre>
+      }
+    />
   )
 }

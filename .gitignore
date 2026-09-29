@@ -13,3 +13,6 @@ __unconfig*
 todos.json
 /src/generated
 *.db
+
+# agent worktrees
+.claude/worktrees
