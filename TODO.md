@@ -23,6 +23,7 @@ i want to know how my planning is going
   - where
   - when
   - budget
+  - nationality
   - visa
   - activity prefs
   - food prefs
@@ -36,10 +37,10 @@ i want to know how my planning is going
 
 don't model users. the user gets their own db (not a bad idea with sqlite...)
 
-- [ ] conversation context
-  - not sure how much openrouter does here
-- [ ] trip profile
-- [ ] todo list
+- [ ] conversation
+  - [ ] message history
+  - [ ] trip profile
+  - [ ] todo list
 
 ## llm integration
 
@@ -52,11 +53,11 @@ don't model users. the user gets their own db (not a bad idea with sqlite...)
 ### e2e
 
 - [ ] request a response from llm, dump to frontend
-- [ ] add trpc streaming endpoint using SSE (no ws server)
+- [ ] server route using @tanstack/ai chat adapter
 - [ ] _stream_ the response from llm
 
 ### trip-builder
 
 - [ ] call a dummy tool from LLM
-- [ ] inject "TODO list" into LLM prompt between turns
+- [ ] recompute "TODO list" for LLM system prompt each turn
 - [ ] instruct LLM to invoke `update-profile` tool 
