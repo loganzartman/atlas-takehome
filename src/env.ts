@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 export const env = createEnv({
   server: {
-    SERVER_URL: z.string().url().optional(),
+    SERVER_URL: z.url().optional(),
     OPENROUTER_API_KEY: z.string().min(1),
     OPENROUTER_MODEL: z.string().min(1),
   },
@@ -22,7 +22,12 @@ export const env = createEnv({
    * What object holds the environment variables at runtime. This is usually
    * `process.env` or `import.meta.env`.
    */
-  runtimeEnv: import.meta.env,
+  // Vite only exposes VITE_-prefixed vars on import.meta.env, so server-only
+  // vars have to come from process.env.
+  runtimeEnv:
+    typeof window === 'undefined'
+      ? { ...process.env, ...import.meta.env }
+      : import.meta.env,
 
   /**
    * By default, this library will feed the environment variables directly to

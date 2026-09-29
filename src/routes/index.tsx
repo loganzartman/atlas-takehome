@@ -1,62 +1,46 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { fetchServerSentEvents, useChat } from '@tanstack/ai-react'
 import { createFileRoute } from '@tanstack/react-router'
-import { useServerFn } from '@tanstack/react-start'
 import { useState } from 'react'
-import { useTRPC } from '#/integrations/trpc/react'
-import { addTodo } from '#/server/todos.functions'
 
 export const Route = createFileRoute('/')({
-  loader: ({ context }) =>
-    context.queryClient.query(context.trpc.todos.list.queryOptions()),
   component: App,
 })
 
 function App() {
-  const trpc = useTRPC()
-  const queryClient = useQueryClient()
-  const { data: todos = [] } = useQuery(trpc.todos.list.queryOptions())
-
-  const [title, setTitle] = useState('')
-  const addTodoFn = useServerFn(addTodo)
-  const add = useMutation({
-    mutationFn: (title: string) => addTodoFn({ data: { title } }),
-    onSuccess: async () => {
-      setTitle('')
-      await queryClient.invalidateQueries({
-        queryKey: trpc.todos.list.queryKey(),
-      })
-    },
+  const [input, setInput] = useState('')
+  const { messages, sendMessage, isLoading, error } = useChat({
+    connection: fetchServerSentEvents('/api/chat'),
   })
 
   return (
-    <main className="mx-auto max-w-md p-8">
-      <h1 className="mb-4 text-2xl font-bold">Todos</h1>
+    <main className="mx-auto max-w-2xl p-8">
       <form
         className="mb-4 flex gap-2"
         onSubmit={(e) => {
           e.preventDefault()
-          if (title.trim()) add.mutate(title)
+          if (!input.trim()) return
+          sendMessage(input.trim())
+          setInput('')
         }}
       >
         <input
           className="flex-1 rounded border px-2 py-1"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="New todo"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          disabled={isLoading}
         />
         <button
           type="submit"
           className="rounded border px-3 py-1"
-          disabled={add.isPending}
+          disabled={isLoading}
         >
-          Add
+          Send
         </button>
       </form>
-      <ul className="list-disc pl-5">
-        {todos.map((todo) => (
-          <li key={todo.id}>{todo.title}</li>
-        ))}
-      </ul>
+      {error && <p className="text-red-600">{error.message}</p>}
+      <pre className="whitespace-pre-wrap text-xs">
+        {JSON.stringify(messages, null, 2)}
+      </pre>
     </main>
   )
 }
