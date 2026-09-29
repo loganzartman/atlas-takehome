@@ -16,6 +16,11 @@ import {
   toLocalDay,
 } from '#/lib/trip-profile'
 
+// Placeholder until destinations have their own photos (same beach shot as
+// /preview).
+const PLACEHOLDER_PHOTO =
+  'https://images.unsplash.com/photo-1531514381259-8c9fedc910b8?w=1200&q=80&auto=format&fit=crop'
+
 export const Route = createFileRoute('/trips/$tripId')({
   loader: async ({ context, params }) => {
     const trip = await context.queryClient.query(
@@ -98,6 +103,7 @@ function TripPlan({
       }
       startDate={profile?.startDate ? toLocalDay(profile.startDate) : undefined}
       endDate={profile?.endDate ? toLocalDay(profile.endDate) : undefined}
+      imageUrl={PLACEHOLDER_PHOTO}
       checklist={checklist}
     />
   )
