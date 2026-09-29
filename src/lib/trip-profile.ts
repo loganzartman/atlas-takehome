@@ -58,6 +58,10 @@ export const PLAN_ITEMS = {
 
 export type PlanItem = keyof typeof PLAN_ITEMS
 
+export const planItemSchema = z.enum(
+  Object.keys(PLAN_ITEMS) as [PlanItem, ...PlanItem[]],
+)
+
 export function isPlanItem(item: string): item is PlanItem {
   return Object.hasOwn(PLAN_ITEMS, item)
 }

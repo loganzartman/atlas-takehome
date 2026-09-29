@@ -21,6 +21,8 @@ pnpm dev
 | `src/lib/trip-profile.ts` | Zod schema for the trip profile (checked against Prisma at compile time) and the planning checklist |
 | `src/db.ts` | Prisma client singleton |
 | `src/server/*.server.ts` | Server-only data access, including the chat persistence stores |
+| `src/server/trip-agent.server.ts` | The agent's tools (`update_profile`, `update_priorities`, `get_destination_info`) and per-turn system prompt |
+| `src/server/destinations.server.ts` | Mock destination data behind `get_destination_info` |
 | `src/integrations/trpc/router.ts` | tRPC router (`trips.*`), served at `/api/trpc` |
 | `src/routes/api.chat.ts` | Chat endpoint: `POST` streams a reply over SSE, `GET` loads a trip's history |
 | `src/routes/` | File-based routes (`/` trip list, `/trips/$tripId` chat) |

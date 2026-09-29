@@ -22,8 +22,41 @@ export function MessageParts({
             {streaming ? 'Thinking...' : 'Finished thinking'}
           </p>
         )
+      case 'tool-call':
+        return (
+          <p key={part.id} className="text-xs text-neutral-500">
+            {describeToolCall(part)}
+          </p>
+        )
       default:
         return null
     }
   })
+}
+
+type ToolCall = Extract<UIMessage['parts'][number], { type: 'tool-call' }>
+
+function describeToolCall({ name, input, output, state }: ToolCall) {
+  const done = state === 'complete'
+  switch (name) {
+    case 'update_profile': {
+      if (!done) return 'Updating plan...'
+      const updated: string[] = output?.updated ?? []
+      const conflicts: Array<{ field: string }> = output?.conflicts ?? []
+      if (output?.error) return `Plan not updated: ${output.error}`
+      return [
+        updated.length > 0 && `Updated plan: ${updated.join(', ')}`,
+        conflicts.length > 0 &&
+          `Needs confirmation: ${conflicts.map((c) => c.field).join(', ')}`,
+      ]
+        .filter(Boolean)
+        .join('. ') || 'Plan unchanged'
+    }
+    case 'update_priorities':
+      return done ? 'Reordered plan' : 'Reordering plan...'
+    case 'get_destination_info':
+      return `${done ? 'Looked up' : 'Looking up'} ${input?.name ?? 'destination'}`
+    default:
+      return `${done ? 'Used' : 'Using'} ${name}`
+  }
 }
