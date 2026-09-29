@@ -186,7 +186,26 @@ const getDestination = toolDefinition({
   outputSchema: destinationInfoSchema.nullable(),
 }).server(({ name }) => getDestinationInfo(name))
 
-export const tripTools = [updateProfile, updatePriorities, getDestination]
+const offerBooking = toolDefinition({
+  name: 'offer_booking',
+  description:
+    'Show the traveler a "Book trip" button. Only call once every checklist item is done or skipped.',
+  inputSchema: z.object({}),
+}).server<TripContext>(async (_input, { context }) => {
+  const open = describePlan(await loadPlan(context.tripId))
+    .filter((p) => p.status === 'open')
+    .map((p) => p.item)
+  return open.length > 0
+    ? { shown: false, error: `Not ready to book; still open: ${open.join(', ')}` }
+    : { shown: true }
+})
+
+export const tripTools = [
+  updateProfile,
+  updatePriorities,
+  getDestination,
+  offerBooking,
+]
 
 export function tripSystemPrompt(plan: Plan, today = new Date()) {
   const checklist = describePlan(plan)
@@ -211,7 +230,7 @@ Recording the plan:
 
 Call get_destination_info when a destination comes up, to ground suggestions about seasons, costs and activities. Its visa notes are general; apply them to the traveler's nationality. If it returns null, say you don't have data on that place rather than guessing.
 
-When every item is done or skipped, summarize the finished plan.
+When every item is done or skipped, summarize the finished plan and call offer_booking so the traveler can book.
 
 Current checklist, in priority order:
 ${checklist}

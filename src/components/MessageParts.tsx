@@ -23,6 +23,9 @@ export function MessageParts({
           </p>
         )
       case 'tool-call':
+        if (part.name === 'offer_booking') {
+          return part.output?.shown ? <BookTripButton key={part.id} /> : null
+        }
         return (
           <p key={part.id} className="text-xs text-neutral-500">
             {describeToolCall(part)}
@@ -32,6 +35,18 @@ export function MessageParts({
         return null
     }
   })
+}
+
+// No-op for now: booking isn't implemented.
+function BookTripButton() {
+  return (
+    <button
+      type="button"
+      className="my-2 rounded-full bg-blue-600 px-5 py-2 text-sm font-medium text-white shadow-elevation-1 transition hover:shadow-elevation-2"
+    >
+      Book trip
+    </button>
+  )
 }
 
 type ToolCall = Extract<UIMessage['parts'][number], { type: 'tool-call' }>
