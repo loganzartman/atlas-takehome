@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-/** Assistant turns are plain text; user turns are a right-aligned bubble. */
+/** Assistant turns are unstyled (parts render their own Markdown); user turns are a plain-text bubble. */
 export function ChatMessage({
   sender,
   children,
@@ -17,9 +17,5 @@ export function ChatMessage({
       </div>
     )
   }
-  return (
-    <div className="whitespace-pre-wrap text-sm text-neutral-900">
-      {children}
-    </div>
-  )
+  return <div className="text-sm text-neutral-900">{children}</div>
 }

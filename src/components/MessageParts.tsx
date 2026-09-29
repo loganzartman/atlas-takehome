@@ -1,4 +1,5 @@
 import type { UIMessage } from '@tanstack/ai-react'
+import { Markdown } from '#/components/Markdown'
 
 /** Renders each part of a message by type. Unhandled part types render nothing. */
 export function MessageParts({
@@ -13,7 +14,7 @@ export function MessageParts({
     switch (part.type) {
       case 'text':
         // biome-ignore lint/suspicious/noArrayIndexKey: parts have no id and only append
-        return <span key={i}>{part.content}</span>
+        return <Markdown key={i}>{part.content}</Markdown>
       case 'thinking':
         return (
           // biome-ignore lint/suspicious/noArrayIndexKey: parts have no id and only append

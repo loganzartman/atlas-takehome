@@ -57,3 +57,65 @@ export const PLAN_ITEMS = {
 } as const satisfies Record<string, ReadonlyArray<keyof TripProfileInput>>
 
 export type PlanItem = keyof typeof PLAN_ITEMS
+
+export function isPlanItem(item: string): item is PlanItem {
+  return Object.hasOwn(PLAN_ITEMS, item)
+}
+
+type DoneFields<K extends PlanItem> = {
+  [F in (typeof PLAN_ITEMS)[K][number]]: NonNullable<TripProfile[F]>
+}
+
+/** Checklist copy: a generic label while open, the locked-in value once done. */
+const PLAN_LABELS: {
+  [K in PlanItem]: { open: string; done: (p: DoneFields<K>) => string }
+} = {
+  destination: { open: 'Destination', done: (p) => p.destination },
+  dates: {
+    open: 'Travel dates',
+    done: (p) => plural(tripDays(p.startDate, p.endDate), 'day'),
+  },
+  activities: { open: 'Things to do', done: (p) => p.activityPrefs },
+  origin: { open: 'Departure city', done: (p) => `From ${p.origin}` },
+  travelers: {
+    open: 'Number of travelers',
+    done: (p) => plural(p.travelers, 'traveler'),
+  },
+  budget: { open: 'Budget', done: (p) => p.budget },
+  visa: { open: 'Visa requirements', done: (p) => p.visaNotes },
+  constraints: { open: 'Special requirements', done: (p) => p.constraints },
+  food: { open: 'Food preferences', done: (p) => p.foodPrefs },
+}
+
+export function isItemDone(profile: TripProfile | null, item: PlanItem) {
+  return PLAN_ITEMS[item].every((field) => profile?.[field] != null)
+}
+
+export function planItemLabel(profile: TripProfile | null, item: PlanItem) {
+  const { open, done } = PLAN_LABELS[item]
+  // isItemDone guarantees this item's fields are non-null.
+  return profile && isItemDone(profile, item)
+    ? done(profile as DoneFields<PlanItem>)
+    : open
+}
+
+/** "Lisbon, Portugal" -> "Lisbon" */
+export function placeCity(place: string) {
+  return place.split(',')[0].trim()
+}
+
+/**
+ * Trip dates are calendar days stored as UTC midnight; rebuild them at local
+ * midnight so local formatting shows the intended day.
+ */
+export function toLocalDay(date: Date) {
+  return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
+}
+
+function tripDays(start: Date, end: Date) {
+  return Math.round((end.getTime() - start.getTime()) / 86_400_000) + 1
+}
+
+function plural(n: number, noun: string) {
+  return `${n} ${noun}${n === 1 ? '' : 's'}`
+}

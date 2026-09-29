@@ -5,7 +5,16 @@ import { ChatInput } from '#/components/ChatInput'
 import { ChatMessage } from '#/components/ChatMessage'
 import { MessageParts } from '#/components/MessageParts'
 import { TripLayout } from '#/components/TripLayout'
+import { TripPlanCard } from '#/components/TripPlanCard'
+import type { ProfilePriority, TripProfile } from '#/generated/prisma/browser'
 import { useTRPC } from '#/integrations/trpc/react'
+import {
+  isItemDone,
+  isPlanItem,
+  placeCity,
+  planItemLabel,
+  toLocalDay,
+} from '#/lib/trip-profile'
 
 export const Route = createFileRoute('/trips/$tripId')({
   loader: async ({ context, params }) => {
@@ -57,10 +66,39 @@ function Trip({ tripId }: { tripId: string }) {
       }
       input={<ChatInput onSubmit={sendMessage} disabled={isLoading} />}
       plan={
-        <pre className="whitespace-pre-wrap text-xs">
-          {JSON.stringify(trip, null, 2)}
-        </pre>
+        trip && (
+          <TripPlan profile={trip.profile} priorities={trip.priorities} />
+        )
       }
+    />
+  )
+}
+
+function TripPlan({
+  profile,
+  priorities,
+}: {
+  profile: TripProfile | null
+  priorities: ProfilePriority[]
+}) {
+  const checklist = priorities
+    .filter((p) => !p.skipped)
+    .map((p) => p.item)
+    .filter(isPlanItem)
+    .map((item) => ({
+      label: planItemLabel(profile, item),
+      done: isItemDone(profile, item),
+    }))
+  return (
+    <TripPlanCard
+      title={
+        profile?.destination
+          ? `Trip to ${placeCity(profile.destination)}`
+          : 'New trip'
+      }
+      startDate={profile?.startDate ? toLocalDay(profile.startDate) : undefined}
+      endDate={profile?.endDate ? toLocalDay(profile.endDate) : undefined}
+      checklist={checklist}
     />
   )
 }
