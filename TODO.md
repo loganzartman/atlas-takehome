@@ -17,6 +17,22 @@ i want to know how my planning is going
   - shows things we've figured out
   - shows things "up next"
 
+### stretch
+
+- trip snapshot
+  - graphic/multimedia display of current trip profile
+    - where => cover photo
+    - when => date
+    - budget ("for under $2k")
+      - hide for high rollers? :P
+    - where + when => weather
+- vibes chooser
+  - user expresses a non-specific preference; LLM invents a set of multimedia cards
+    - e.g. "warm places", "mediterranean food"
+- review and book
+  - "your trip is ready!"
+  - review itemized purchases and cost
+
 ## data model
 
 - trip profile
@@ -46,15 +62,15 @@ don't model users. the user gets their own db (not a bad idea with sqlite...)
 
 ### access
 
-- [ ] create openrouter account
-- [ ] put API key into local env
-- [ ] add model config to env
+- [x] create openrouter account
+- [x] put API key into local env
+- [x] add model config to env
 
 ### e2e
 
-- [ ] request a response from llm, dump to frontend
-- [ ] server route using @tanstack/ai chat adapter
-- [ ] _stream_ the response from llm
+- [x] request a response from llm, dump to frontend
+- [x] server route using @tanstack/ai chat adapter
+- [x] _stream_ the response from llm
 
 ### trip-builder
 
